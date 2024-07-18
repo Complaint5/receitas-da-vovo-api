@@ -1,0 +1,45 @@
+#Configurações do servidor
+server:
+    port: 8080
+    error:
+        include-stacktrace: never
+
+#Configurações para o banco de dados
+spring:
+    application:
+        name: receitas-da-vovo
+    datasource:
+        url: jdbc:postgresql://localhost:5432/grandmas-recipes
+        username: postgres
+        password: postgres
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                # show_sql: true
+                # format_sql: true
+
+
+
+
+
+
+    # datasource:
+    #     url: jdbc:h2:mem:test
+    #     driverClassName: org.h2.Driver
+    #     username: sa
+    #     password: 
+    # jpa:
+    #     open-in-view: false
+    #     database-platform: org.hibernate.dialect.H2Dialect
+    #     defer-datasource-initialization: false
+    #     properties:
+    #         hibernate:
+    #             # show_sql: true
+    #             # format_sql: true
+    # h2:
+    #     console:
+    #         path: /h2
+    #         enabled: true
