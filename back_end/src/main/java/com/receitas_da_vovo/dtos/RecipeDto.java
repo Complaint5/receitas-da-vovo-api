@@ -8,5 +8,6 @@ public record RecipeDto(
     String description,
     Double rating
     ) {
+        // TODO: javadoc
 
 }

@@ -14,6 +14,9 @@ import com.receitas_da_vovo.utils.ClassConverter;
 
 import jakarta.transaction.Transactional;
 
+/**
+ * Classe responsálve pela logica relacionada a RecipeEntity
+ */
 @Service
 public class RecipeService {
     @Autowired
@@ -22,10 +25,10 @@ public class RecipeService {
     private ClassConverter classConverter;
 
     /**
-     * Método Responsálve pela logica para salvar uma nova receita
+     * Método Responsálve pela logica de salvar uma nova receita no banco de dados
      * 
-     * @param recipeDto Recebe um RecipeDto
-     * @return Retorna um recipeDto com os dados da receita salva no banco de dados
+     * @param recipeDto Recebe um objeto do tipo RecipeDto
+     * @return Retorna um objeto do tipo RecipeDto
      */
     @Transactional
     public RecipeDto saveRecipe(RecipeDto recipeDto) {
@@ -38,35 +41,32 @@ public class RecipeService {
 
         RecipeEntity recipeCreated = this.recipeRepository.save(recipe);
 
-        return new RecipeDto(recipeCreated.getId(), recipeCreated.getTitle(), recipeCreated.getDescription(),
-                recipeCreated.getRating());
+        return this.classConverter.recipeEntityToRecipeDto(recipeCreated);
     }
 
     /**
-     * Método Responsálve por adicionar uma nota a lista de notas da receita
+     * Método Responsálve pela logica de atualizar a nota da receita no banco de
+     * dados
      * 
      * @param id     recebe um UUID
      * @param rating recebe um Double
      * @return Retorna um boolean
      */
     @Transactional
-    public boolean updateRating(UUID id, Double rating) {
+    public RecipeDto updateRating(UUID id, Double rating) {
         RecipeEntity recipe = this.findRecipe(id);
 
         recipe.setRating(rating + recipe.getRating());
 
-        this.recipeRepository.save(recipe);
-
-        return true;
+        return this.classConverter.recipeEntityToRecipeDto(this.recipeRepository.save(recipe));
     }
 
     /**
-     * Método responsável pela logica para atualizar a receita no banco de dados
+     * Método responsável pela logica de atualizar uma receita no banco de dados
      * 
-     * @param recipeDto recebe um recipeDto
+     * @param recipeDto recebe um objeto do tipo recipeDto
      * @param id        recebe um uuid
-     * @return Retorna um recipeDto com os dados da receita atualizados no banco de
-     *         dados
+     * @return Retorna um objeto do tipo RecipeDto
      */
     @Transactional
     public RecipeDto updateRecipe(UUID id, RecipeDto recipeDto) {
@@ -76,11 +76,11 @@ public class RecipeService {
 
         RecipeEntity recipea = this.recipeRepository.save(recipe);
 
-        return classConverter.recipeEntityToRecipeDto(recipea);
+        return this.classConverter.recipeEntityToRecipeDto(recipea);
     }
 
     /**
-     * Método Responsálve por setar a variavel activated com false
+     * Método Responsálve pela logica de deletar uma receita no banco de dados
      * 
      * @param id recebe um uuid
      * @return retorna um boolean
@@ -95,36 +95,38 @@ public class RecipeService {
     }
 
     /**
-     * Método Responsálve por retornar uma receita
+     * Método Responsálve pela logica de buscar uma receita no banco de dados pelo
+     * id
      * 
      * @param id recebe um UUID
-     * @return Retorna um DTO de recipe
+     * @return Retorna um objeto do tipo RecipeDto
      */
     public RecipeDto findRecipeById(UUID id) {
         RecipeEntity recipe = this.findRecipe(id);
-        return classConverter.recipeEntityToRecipeDto(recipe);
+        return this.classConverter.recipeEntityToRecipeDto(recipe);
     }
 
     /**
-     * Método Responsálve por retornar uma lista de receitas salvas no banco de
-     * dados
+     * Método Responsálve pela logica de buscar todas as receitas no banco de dados
      * 
-     * @return Retorna uma lista de dtos de receitas
+     * @return Retorna uma lista de objetos do tipo RecipeDto
      */
     public List<RecipeDto> findAllRecipes() {
         return this.recipeRepository.findAllRecipeByActivatedTrue().stream()
-                .map(recipe -> classConverter.recipeEntityToRecipeDto(recipe))
+                .map(recipe -> this.classConverter.recipeEntityToRecipeDto(recipe))
                 .toList();
     }
 
     /**
-     * Método privado usado para retornar uma receita salva no banco de dados
+     * Método privado reponsável pela logica de buscar uma receita no banco de dados
+     * caso o contrario lançar uma exeção
      * 
      * @param id recebe um UUID
-     * @return retorna uma entidade de recipe
-     * @throws exception Lançara uma exeção caso não encontre a receita /////////////////////////////////////////////
+     * @return retorna um objeto do tipo RecipeEntity
+     * @throws exception Lançara uma exeção caso não encontre a receita
+     *                   /////////////////////////////////////////////
      */
-    private RecipeEntity findRecipe(UUID id) throws RuntimeException{
+    private RecipeEntity findRecipe(UUID id) throws RuntimeException {
         Optional<RecipeEntity> recipe = this.recipeRepository.findRecipeByIdAndActivatedTrue(id);
 
         if (recipe.isPresent()) {

@@ -13,4 +13,5 @@ import com.receitas_da_vovo.entities.RecipeEntity;
 public interface RecipeRepository extends JpaRepository<RecipeEntity, UUID>{
     List<RecipeEntity> findAllRecipeByActivatedTrue();
     Optional<RecipeEntity> findRecipeByIdAndActivatedTrue(UUID id);
+    // TODO: javadoc
 }

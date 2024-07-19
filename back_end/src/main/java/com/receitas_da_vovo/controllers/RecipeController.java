@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class RecipeController {
     @Autowired
     private RecipeService recipeService;
+    // TODO: javadoc
+    // TODO: adicionar o usuario na receita como criador
+    // TODO: adicionar logica de buscar receita pelo usuario
 
     @PostMapping()
     public ResponseEntity<RecipeDto> saveRecipe(@RequestBody RecipeDto recipeDto) {
@@ -39,9 +42,8 @@ public class RecipeController {
     }
 
     @PutMapping("/rating/{id}")
-    public ResponseEntity<Void> updateRating(@PathVariable UUID id, @RequestBody RecipeDto recipeDto) {
-        this.recipeService.updateRating(id, recipeDto.rating());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RecipeDto> updateRating(@PathVariable UUID id, @RequestBody RecipeDto recipeDto) {
+        return ResponseEntity.ok(this.recipeService.updateRating(id, recipeDto.rating()));
     }
 
     @PutMapping("/{id}")
