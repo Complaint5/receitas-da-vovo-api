@@ -16,20 +16,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.receitas_da_vovo.dtos.SaveUserDto;
 import com.receitas_da_vovo.dtos.UserDto;
 import com.receitas_da_vovo.services.UserService;
 
+import jakarta.validation.Valid;
+
+/**
+ * Classe reponsável pelos endpoints para usuario
+ */
 @RestController
 @RequestMapping("/v1/user")
 public class UserController {
     @Autowired
     private UserService userService;
-    //TODO: javadoc
 
+    /**
+     * Método responsável pelo endpoint de salvar o usuario
+     * 
+     * @param saveUserDto recebe um objeto do tipo SaveUserDto
+     * @return retorna um ResponseEntity do tipo UserDto com o estatos created
+     */
     @PostMapping
-    public ResponseEntity<UserDto> saveUser(@RequestBody UserDto userDto){
-        UserDto user = this.userService.saveUser(userDto);
-        
+    public ResponseEntity<UserDto> saveUser(@RequestBody @Valid SaveUserDto saveUserDto) {
+        UserDto user = this.userService.saveUser(saveUserDto);
+
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(user.id())
@@ -38,24 +49,49 @@ public class UserController {
         return ResponseEntity.created(uri).body(user);
     }
 
+    /**
+     * Método responsável pelo endpoint de atualizar o usuario
+     * 
+     * @param id      recebe um UUID
+     * @param userDto recebe um objeto do tipo UserDto
+     * @return retorna um ResponseEntity do tipo UserDto com o estatos ok
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser (@PathVariable UUID id, @RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> updateUser(@PathVariable UUID id, @RequestBody @Valid UserDto userDto) {
         return ResponseEntity.ok(this.userService.updataUser(id, userDto));
     }
-    
+
+    /**
+     * Método responsável pelo endpoint de deletar o usuario
+     * 
+     * @param id recebe um UUID
+     * @return retorna um ResponseEntity com o estatos no content
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserDto> deleteUser(@PathVariable UUID id){
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         this.userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Método responsável pelo endpoint de buscar o usuario pelo id
+     * 
+     * @param id recebe um UUID
+     * @return retorna um ResponseEntity do tipo UserDto com o estatos ok
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> findUserById(@PathVariable UUID id){
+    public ResponseEntity<UserDto> findUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.userService.findUserById(id));
     }
 
+    /**
+     * Método responsável pelo endpoint de buscar todos os usuario
+     * 
+     * @return retorna um ResponseEntity com uma lista do tipo UserDto com o estatos
+     *         ok
+     */
     @GetMapping
-    public ResponseEntity<List<UserDto>> findAllUsers(){
+    public ResponseEntity<List<UserDto>> findAllUsers() {
         return ResponseEntity.ok(this.userService.findAllUsers());
     }
 }

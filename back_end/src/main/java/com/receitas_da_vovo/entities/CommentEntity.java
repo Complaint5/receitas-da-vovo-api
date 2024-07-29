@@ -16,23 +16,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Classe reponsável por representa a tabela de receitas
+ * Classe reponsável por representa a tabela de comentario
  */
 @Entity
-@Table(name = "recipes")
+@Table(name = "comments")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class RecipeEntity {
+public class CommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String title;
-    private String description;
+    private String body;
     @ManyToOne
-    private UserEntity creator;
+    private RecipeEntity recipe;
+    @ManyToOne
+    private UserEntity owner;
     private Boolean activated;
 }

@@ -18,8 +18,14 @@ spring:
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
-                # show_sql: true
-                # format_sql: true
+                show_sql: true
+                format_sql: true
+    cache:
+        type: redis
+        redis:
+            host: 172.30.224.1
+            port: 6379
+            time-to-alive: 10000
 
 
 

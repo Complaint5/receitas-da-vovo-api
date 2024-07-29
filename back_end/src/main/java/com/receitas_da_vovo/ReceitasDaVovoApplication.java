@@ -10,6 +10,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ReceitasDaVovoApplication {
 
+	/**
+	 * Método reponsável por rodar a aplicação
+	 * 
+	 * @param args recebe um array de string
+	 */
 	public static void main(String[] args) {
 		SpringApplication.run(ReceitasDaVovoApplication.class, args);
 	}

@@ -1,17 +1,16 @@
 package com.receitas_da_vovo.services;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.receitas_da_vovo.dtos.SaveUserDto;
 import com.receitas_da_vovo.dtos.UserDto;
 import com.receitas_da_vovo.entities.UserEntity;
 import com.receitas_da_vovo.enums.UserRole;
 import com.receitas_da_vovo.repositories.UserRepository;
-import com.receitas_da_vovo.utils.ClassConverter;
 
 import jakarta.transaction.Transactional;
 
@@ -22,8 +21,8 @@ import jakarta.transaction.Transactional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private ClassConverter classConverter;
+
+    // TODO: Adicionar metodo para trocar de senha
 
     /**
      * Método responsável pela logica de salvar um usuario no banco de dados
@@ -32,18 +31,18 @@ public class UserService {
      * @return retorna um objeto do tipo UserDto
      */
     @Transactional
-    public UserDto saveUser(UserDto userDto) {
+    public UserDto saveUser(SaveUserDto saveUserDto) {
         UserEntity user = UserEntity.builder()
-                .name(userDto.name())
-                .email(userDto.email())
-                .password(userDto.password())
+                .name(saveUserDto.name())
+                .email(saveUserDto.email())
+                .password(saveUserDto.password())
                 .activated(true)
                 .userRole(UserRole.STANDART)
                 .build();
 
         UserEntity userCreated = this.userRepository.save(user);
 
-        return this.classConverter.userEntityToUserDto(userCreated);
+        return new UserDto(userCreated.getId(), userCreated.getName(), userCreated.getEmail());
     }
 
     /**
@@ -59,9 +58,10 @@ public class UserService {
 
         user.setName(userDto.name());
         user.setEmail(userDto.email());
-        user.setPassword(userDto.password());
 
-        return this.classConverter.userEntityToUserDto(this.userRepository.save(user));
+        UserEntity userUpdated = this.userRepository.save(user);
+
+        return new UserDto(userUpdated.getId(), userUpdated.getName(), userUpdated.getEmail());
     }
 
     /**
@@ -88,7 +88,9 @@ public class UserService {
      * @return retorna um objeto do tipo UserDto
      */
     public UserDto findUserById(UUID id) {
-        return this.findUserById(id);
+        UserEntity user = this.findUserEntity(id);
+
+        return new UserDto(user.getId(), user.getName(), user.getEmail());
     }
 
     /**
@@ -98,12 +100,12 @@ public class UserService {
      */
     public List<UserDto> findAllUsers() {
         return this.userRepository.findAllUsersByActivatedTrue().stream()
-                .map(user -> this.classConverter.userEntityToUserDto(user))
+                .map(user -> new UserDto(user.getId(), user.getName(), user.getEmail()))
                 .toList();
     }
 
     /**
-     * Método privado responsável pela logica de buscar um usuario no banco de dados
+     * Método responsável pela logica de buscar um usuario no banco de dados
      * caso o coontrario lançar uma exeção
      * 
      * @param id recebe um UUID
@@ -111,13 +113,7 @@ public class UserService {
      * @throws exception Lançara uma exeção caso não encontre o usuarip
      *                   /////////////////////////////////////////////
      */
-    private UserEntity findUserEntity(UUID id) throws RuntimeException {
-        Optional<UserEntity> user = this.userRepository.findUserByIdAndActivatedTrue(id);
-
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            throw new RuntimeException("Usuario não encontrado.");
-        }
+    public UserEntity findUserEntity(UUID id) throws RuntimeException {
+        return this.userRepository.findUserByIdAndActivatedTrue(id).orElseThrow(() -> new RuntimeException("Usuario não encontrado."));
     }
 }
