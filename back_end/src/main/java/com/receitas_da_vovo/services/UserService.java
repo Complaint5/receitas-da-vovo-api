@@ -10,6 +10,7 @@ import com.receitas_da_vovo.dtos.SaveUserDto;
 import com.receitas_da_vovo.dtos.UserDto;
 import com.receitas_da_vovo.entities.UserEntity;
 import com.receitas_da_vovo.enums.UserRole;
+import com.receitas_da_vovo.exceptions.UserNotFoundException;
 import com.receitas_da_vovo.repositories.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -110,10 +111,9 @@ public class UserService {
      * 
      * @param id recebe um UUID
      * @return retorna um objeto do tipo UserEntity
-     * @throws exception Lançara uma exeção caso não encontre o usuarip
-     *                   /////////////////////////////////////////////
+     * @throws exception Lançara uma exeção caso não encontre o usuario
      */
     public UserEntity findUserEntity(UUID id) throws RuntimeException {
-        return this.userRepository.findUserByIdAndActivatedTrue(id).orElseThrow(() -> new RuntimeException("Usuario não encontrado."));
+        return this.userRepository.findUserByIdAndActivatedTrue(id).orElseThrow(() -> new UserNotFoundException());
     }
 }

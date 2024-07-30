@@ -12,6 +12,7 @@ import com.receitas_da_vovo.dtos.SaveRecipeDto;
 import com.receitas_da_vovo.dtos.SaveRecipeRatingDto;
 import com.receitas_da_vovo.entities.RecipeEntity;
 import com.receitas_da_vovo.entities.RecipeRatingEntity;
+import com.receitas_da_vovo.exceptions.RecipeNotFoundException;
 import com.receitas_da_vovo.repositories.RecipeRatingRepository;
 import com.receitas_da_vovo.repositories.RecipeRepository;
 
@@ -139,7 +140,8 @@ public class RecipeService {
      * @throws exception Lançara uma exeção caso não encontre a receita
      */
     public RecipeEntity findRecipe(UUID id) throws RuntimeException {
-        return this.recipeRepository.findRecipeByIdAndActivatedTrue(id).orElseThrow(() -> new RuntimeException("Receita não encontrada."));
+        return this.recipeRepository.findRecipeByIdAndActivatedTrue(id)
+                .orElseThrow(() -> new RecipeNotFoundException());
     }
 
     /**

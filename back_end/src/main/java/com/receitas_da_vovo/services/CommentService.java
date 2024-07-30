@@ -1,7 +1,6 @@
 package com.receitas_da_vovo.services;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.receitas_da_vovo.dtos.CommentDto;
 import com.receitas_da_vovo.dtos.SaveCommentDto;
 import com.receitas_da_vovo.entities.CommentEntity;
+import com.receitas_da_vovo.exceptions.CommentNotFoundException;
 import com.receitas_da_vovo.repositories.CommentRepository;
 
 import jakarta.transaction.Transactional;
@@ -116,6 +116,7 @@ public class CommentService {
      *                          comentário
      */
     public CommentEntity findCommentEntity(UUID id) throws RuntimeException {
-        return this.commentRepository.findCommentByIdAndActivatedTrue(id).orElseThrow(() -> new RuntimeException("Comment not found."));
+        return this.commentRepository.findCommentByIdAndActivatedTrue(id)
+                .orElseThrow(() -> new CommentNotFoundException());
     }
 }
