@@ -17,10 +17,12 @@ import com.receitas_da_vovo.repositories.RecipeRatingRepository;
 import com.receitas_da_vovo.repositories.RecipeRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Classe responsálve pela lógica relacionada a RecipeEntity
  */
+@Slf4j
 @Service
 public class RecipeService {
     @Autowired
@@ -29,8 +31,6 @@ public class RecipeService {
     private RecipeRatingRepository recipeRatingRepository;
     @Autowired
     private UserService userService;
-
-    // TODO: Fazer RestControllerAdvice
 
     /**
      * Método Responsálve pela lógica de salvar uma nova receita no banco de dados
@@ -49,6 +49,8 @@ public class RecipeService {
                 .build();
 
         RecipeEntity recipeCreated = this.recipeRepository.save(recipe);
+
+        log.info("receita {} foi salva no banco de dados.", recipeCreated.getId());
 
         return new RecipeDto(recipeCreated.getId(), recipeCreated.getTitle(), recipeCreated.getDescription(),
                 this.findRating(recipeCreated.getId()));
@@ -70,6 +72,8 @@ public class RecipeService {
 
         RecipeEntity recipeUpdated = this.recipeRepository.save(recipe);
 
+        log.info("receita {} foi atualizada no banco de dados.", recipeUpdated.getId());
+
         return new RecipeDto(recipeUpdated.getId(), recipeUpdated.getTitle(), recipeUpdated.getDescription(),
                 this.findRating(recipeUpdated.getId()));
     }
@@ -85,6 +89,8 @@ public class RecipeService {
         RecipeEntity recipe = this.findRecipe(id);
 
         recipe.setActivated(false);
+
+        log.info("receita {} foi desativada no banco de dados.", recipe.getId());
 
         return new RecipeDto(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
                 this.findRating(recipe.getId()));
@@ -164,11 +170,7 @@ public class RecipeService {
     private Double findRating(UUID id) {
         Double rating = this.recipeRatingRepository.rating(id);
 
-        if (rating != null) {
-            return rating;
-        } else {
-            return 0D;
-        }
+        return rating != null ? rating : 0D;
     }
 
     /**
@@ -187,6 +189,8 @@ public class RecipeService {
                 .build();
 
         RecipeRatingEntity savedRecipeRating = this.recipeRatingRepository.save(recipeRating);
+
+        log.info("avaliação {} da receita {} foi salva no banco de dados pelo usuario {}.", savedRecipeRating.getId(), saveRecipeRatingDto.recipe().id(), saveRecipeRatingDto.owner().id());
 
         return new RecipeRatingDto(savedRecipeRating.getRating());
     }

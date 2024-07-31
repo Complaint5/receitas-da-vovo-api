@@ -13,10 +13,12 @@ import com.receitas_da_vovo.exceptions.CommentNotFoundException;
 import com.receitas_da_vovo.repositories.CommentRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Classe responsável pela lógica relacionada aos comentarios
  */
+@Slf4j
 @Service
 public class CommentService {
     @Autowired
@@ -43,6 +45,8 @@ public class CommentService {
 
         CommentEntity commentSaved = this.commentRepository.save(comment);
 
+        log.info("cometario {} foi salvo no banco de dados.", commentSaved.getId());
+
         return new CommentDto(commentSaved.getId(), commentSaved.getBody());
     }
 
@@ -61,6 +65,8 @@ public class CommentService {
 
         CommentEntity commentUpdated = this.commentRepository.save(comment);
 
+        log.info("cometario {} foi atualizado no banco de dados.", commentUpdated.getId());
+
         return new CommentDto(commentUpdated.getId(), commentUpdated.getBody());
     }
 
@@ -76,7 +82,7 @@ public class CommentService {
 
         comment.setActivated(false);
 
-        this.commentRepository.save(comment);
+        log.info("cometario {} foi desativada no banco de dados.", comment.getId());
 
         return true;
     }

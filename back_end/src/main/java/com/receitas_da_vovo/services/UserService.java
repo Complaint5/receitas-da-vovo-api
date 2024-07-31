@@ -14,10 +14,12 @@ import com.receitas_da_vovo.exceptions.UserNotFoundException;
 import com.receitas_da_vovo.repositories.UserRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Classe responsálve pela logica relacionada a UserEntity
  */
+@Slf4j
 @Service
 public class UserService {
     @Autowired
@@ -43,6 +45,8 @@ public class UserService {
 
         UserEntity userCreated = this.userRepository.save(user);
 
+        log.info("usuairo {} foi salvo no banco de dados.", userCreated.getId());
+
         return new UserDto(userCreated.getId(), userCreated.getName(), userCreated.getEmail());
     }
 
@@ -62,6 +66,8 @@ public class UserService {
 
         UserEntity userUpdated = this.userRepository.save(user);
 
+        log.info("usuairo {} foi atualizado no banco de dados.", userUpdated.getId());
+
         return new UserDto(userUpdated.getId(), userUpdated.getName(), userUpdated.getEmail());
     }
 
@@ -77,7 +83,7 @@ public class UserService {
 
         user.setActivated(false);
 
-        this.userRepository.save(user);
+        log.info("usuairo {} foi desativado no banco de dados.", user.getId());
 
         return true;
     }

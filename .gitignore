@@ -37,3 +37,5 @@ data
 
 ### Docker ###
 docker-compose.yml
+
+logs/
