@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.receitas_da_vovo.dtos.SaveUserDto;
-import com.receitas_da_vovo.dtos.UserDto;
+import com.receitas_da_vovo.domain.user.UserRequest;
+import com.receitas_da_vovo.domain.user.UserResponse;
 import com.receitas_da_vovo.services.UserService;
 
 import jakarta.validation.Valid;
@@ -34,12 +34,12 @@ public class UserController {
     /**
      * Método responsável pelo endpoint de salvar o usuario
      * 
-     * @param saveUserDto recebe um objeto do tipo SaveUserDto
-     * @return retorna um ResponseEntity do tipo UserDto com o estatos created
+     * @param userRequest recebe um objeto do tipo UserRequest
+     * @return retorna um ResponseEntity do tipo UserResponse com o estatos created
      */
     @PostMapping
-    public ResponseEntity<UserDto> saveUser(@RequestBody @Valid SaveUserDto saveUserDto) {
-        UserDto user = this.userService.saveUser(saveUserDto);
+    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid UserRequest userRequest) {
+        UserResponse user = this.userService.saveUser(userRequest);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -52,13 +52,14 @@ public class UserController {
     /**
      * Método responsável pelo endpoint de atualizar o usuario
      * 
-     * @param id      recebe um UUID
-     * @param userDto recebe um objeto do tipo UserDto
-     * @return retorna um ResponseEntity do tipo UserDto com o estatos ok
+     * @param id           recebe um UUID
+     * @param userResponse recebe um objeto do tipo UserResponse
+     * @return retorna um ResponseEntity do tipo UserResponse com o estatos ok
      */
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable UUID id, @RequestBody @Valid UserDto userDto) {
-        return ResponseEntity.ok(this.userService.updataUser(id, userDto));
+    public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id,
+            @RequestBody @Valid UserResponse userResponse) {
+        return ResponseEntity.ok(this.userService.updataUser(id, userResponse));
     }
 
     /**
@@ -77,21 +78,21 @@ public class UserController {
      * Método responsável pelo endpoint de buscar o usuario pelo id
      * 
      * @param id recebe um UUID
-     * @return retorna um ResponseEntity do tipo UserDto com o estatos ok
+     * @return retorna um ResponseEntity do tipo UserResponse com o estatos ok
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> findUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponse> findUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.userService.findUserById(id));
     }
 
     /**
      * Método responsável pelo endpoint de buscar todos os usuario
      * 
-     * @return retorna um ResponseEntity com uma lista do tipo UserDto com o estatos
-     *         ok
+     * @return retorna um ResponseEntity com uma lista do tipo UserResponse com o
+     *         estatos ok
      */
     @GetMapping
-    public ResponseEntity<List<UserDto>> findAllUsers() {
+    public ResponseEntity<List<UserResponse>> findAllUsers() {
         return ResponseEntity.ok(this.userService.findAllUsers());
     }
 }

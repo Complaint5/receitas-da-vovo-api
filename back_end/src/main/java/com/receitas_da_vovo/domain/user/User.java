@@ -1,12 +1,14 @@
-package com.receitas_da_vovo.entities;
+package com.receitas_da_vovo.domain.user;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,23 +18,25 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Classe reponsável por representa a tabela de receitas
+ * Classe reponsável por representa a tabela de usuarios
  */
 @Entity
-@Table(name = "recipes")
+@Table(name = "users")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class RecipeEntity {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String title;
-    private String description;
-    @ManyToOne
-    private UserEntity creator;
+    private String name;
+    @Column(unique = true)
+    private String email;
+    private String password;
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
     private Boolean activated;
 }

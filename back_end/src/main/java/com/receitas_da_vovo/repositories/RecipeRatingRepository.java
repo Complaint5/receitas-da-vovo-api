@@ -6,14 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.receitas_da_vovo.entities.RecipeRatingEntity;
+import com.receitas_da_vovo.domain.recipe_rating.RecipeRating;
 
 /**
  * Classe responsável pela lógica relacionada as querys da tabela de avaliações
  * das receitas
  */
 @Repository
-public interface RecipeRatingRepository extends JpaRepository<RecipeRatingEntity, UUID> {
+public interface RecipeRatingRepository extends JpaRepository<RecipeRating, UUID> {
     /**
      * Método responsável por retornar uma media de todas as avaliações de uma
      * receita

@@ -6,13 +6,13 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.receitas_da_vovo.dtos.RecipeDto;
-import com.receitas_da_vovo.dtos.RecipeRatingDto;
-import com.receitas_da_vovo.dtos.SaveRecipeDto;
-import com.receitas_da_vovo.dtos.SaveRecipeRatingDto;
-import com.receitas_da_vovo.entities.RecipeEntity;
-import com.receitas_da_vovo.entities.RecipeRatingEntity;
-import com.receitas_da_vovo.exceptions.RecipeNotFoundException;
+import com.receitas_da_vovo.domain.recipe.RecipeResponse;
+import com.receitas_da_vovo.domain.recipe_rating.RecipeRating;
+import com.receitas_da_vovo.domain.recipe_rating.RecipeRatingRequest;
+import com.receitas_da_vovo.domain.recipe_rating.RecipeRatingResponse;
+import com.receitas_da_vovo.domain.recipe.Recipe;
+import com.receitas_da_vovo.domain.recipe.RecipeRequest;
+import com.receitas_da_vovo.infra.exceptions.RecipeNotFoundException;
 import com.receitas_da_vovo.repositories.RecipeRatingRepository;
 import com.receitas_da_vovo.repositories.RecipeRepository;
 
@@ -20,7 +20,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Classe responsálve pela lógica relacionada a RecipeEntity
+ * Classe responsálve pela lógica relacionada a Recipe
  */
 @Slf4j
 @Service
@@ -35,47 +35,47 @@ public class RecipeService {
     /**
      * Método Responsálve pela lógica de salvar uma nova receita no banco de dados
      * 
-     * @param SaveRecipeDto Recebe um objeto do tipo SaveRecipeDto
-     * @return Retorna um objeto do tipo RecipeDto
+     * @param recipeRequest Recebe um objeto do tipo RecipeRequest
+     * @return Retorna um objeto do tipo RecipeResponse
      */
     @Transactional
-    public RecipeDto saveRecipe(SaveRecipeDto saveRecipeDto) {
+    public RecipeResponse saveRecipe(RecipeRequest recipeRequest) {
 
-        RecipeEntity recipe = RecipeEntity.builder()
-                .title(saveRecipeDto.title())
-                .description(saveRecipeDto.description())
-                .creator(this.userService.findUserEntity(saveRecipeDto.creator().id()))
+        Recipe recipe = Recipe.builder()
+                .title(recipeRequest.title())
+                .description(recipeRequest.description())
+                .creator(this.userService.findUser(recipeRequest.creatorId()))
                 .activated(true)
                 .build();
 
-        RecipeEntity recipeCreated = this.recipeRepository.save(recipe);
+        Recipe recipeCreated = this.recipeRepository.save(recipe);
 
         log.info("receita {} foi salva no banco de dados.", recipeCreated.getId());
 
-        return new RecipeDto(recipeCreated.getId(), recipeCreated.getTitle(), recipeCreated.getDescription(),
-                this.findRating(recipeCreated.getId()));
+        return new RecipeResponse(recipeCreated.getId(), recipeCreated.getTitle(), recipeCreated.getDescription(),
+                this.findRatingAverage(recipeCreated.getId()));
     }
 
     /**
      * Método responsável pela lógica de atualizar uma receita no banco de dados
      * 
-     * @param recipeDto recebe um objeto do tipo RecipeDto
+     * @param recipeResponse recebe um objeto do tipo RecipeResponse
      * @param id        recebe um uuid
-     * @return Retorna um objeto do tipo RecipeDto
+     * @return Retorna um objeto do tipo RecipeResponse
      */
     @Transactional
-    public RecipeDto updateRecipe(UUID id, RecipeDto recipeDto) {
-        RecipeEntity recipe = this.findRecipe(id);
+    public RecipeResponse updateRecipe(UUID id, RecipeResponse recipeResponse) {
+        Recipe recipe = this.findRecipe(id);
 
-        recipe.setTitle(recipeDto.title());
-        recipe.setDescription(recipeDto.description());
+        recipe.setTitle(recipeResponse.title());
+        recipe.setDescription(recipeResponse.description());
 
-        RecipeEntity recipeUpdated = this.recipeRepository.save(recipe);
+        Recipe recipeUpdated = this.recipeRepository.save(recipe);
 
         log.info("receita {} foi atualizada no banco de dados.", recipeUpdated.getId());
 
-        return new RecipeDto(recipeUpdated.getId(), recipeUpdated.getTitle(), recipeUpdated.getDescription(),
-                this.findRating(recipeUpdated.getId()));
+        return new RecipeResponse(recipeUpdated.getId(), recipeUpdated.getTitle(), recipeUpdated.getDescription(),
+                this.findRatingAverage(recipeUpdated.getId()));
     }
 
     /**
@@ -85,15 +85,15 @@ public class RecipeService {
      * @return retorna um boolean
      */
     @Transactional
-    public RecipeDto deleteRecipe(UUID id) {
-        RecipeEntity recipe = this.findRecipe(id);
+    public RecipeResponse deleteRecipe(UUID id) {
+        Recipe recipe = this.findRecipe(id);
 
         recipe.setActivated(false);
 
         log.info("receita {} foi desativada no banco de dados.", recipe.getId());
 
-        return new RecipeDto(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
-                this.findRating(recipe.getId()));
+        return new RecipeResponse(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
+                this.findRatingAverage(recipe.getId()));
     }
 
     /**
@@ -101,25 +101,25 @@ public class RecipeService {
      * id
      * 
      * @param id recebe um UUID
-     * @return Retorna um objeto do tipo RecipeDto
+     * @return Retorna um objeto do tipo RecipeResponse
      */
-    public RecipeDto findRecipeById(UUID id) {
-        RecipeEntity recipe = this.findRecipe(id);
+    public RecipeResponse findRecipeById(UUID id) {
+        Recipe recipe = this.findRecipe(id);
 
-        return new RecipeDto(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
-                this.findRating(recipe.getId()));
+        return new RecipeResponse(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
+                this.findRatingAverage(recipe.getId()));
     }
 
     /**
      * Método Responsálve pela lógica de buscar todas as receitas no banco de dados
      * 
-     * @return Retorna uma lista de objetos do tipo RecipeDto
+     * @return Retorna uma lista de objetos do tipo RecipeResponse
      */
-    public List<RecipeDto> findAllRecipes() {
+    public List<RecipeResponse> findAllRecipes() {
         System.out.println();
         return this.recipeRepository.findAllRecipeByActivatedTrue().stream()
-                .map(recipe -> new RecipeDto(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
-                        this.findRating(recipe.getId())))
+                .map(recipe -> new RecipeResponse(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
+                        this.findRatingAverage(recipe.getId())))
                 .toList();
     }
 
@@ -128,12 +128,12 @@ public class RecipeService {
      * pelo id do usuario
      * 
      * @param id recebe um UUID
-     * @return retorna uma lista de objetos do tipo RecipeDto
+     * @return retorna uma lista de objetos do tipo RecipeResponse
      */
-    public List<RecipeDto> findAllRecipesByUser(UUID id) {
-        return this.recipeRepository.findAllRecipesByUser(this.userService.findUserEntity(id).getId()).stream()
-                .map(recipe -> new RecipeDto(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
-                        this.findRating(recipe.getId())))
+    public List<RecipeResponse> findAllRecipesByUser(UUID id) {
+        return this.recipeRepository.findAllRecipesByUser(this.userService.findUser(id).getId()).stream()
+                .map(recipe -> new RecipeResponse(recipe.getId(), recipe.getTitle(), recipe.getDescription(),
+                        this.findRatingAverage(recipe.getId())))
                 .toList();
     }
 
@@ -142,22 +142,72 @@ public class RecipeService {
      * caso o contrario lançar uma exeção
      * 
      * @param id recebe um UUID
-     * @return retorna um objeto do tipo RecipeEntity
+     * @return retorna um objeto do tipo Recipe
      * @throws exception Lançara uma exeção caso não encontre a receita
      */
-    public RecipeEntity findRecipe(UUID id) throws RuntimeException {
+    public Recipe findRecipe(UUID id) throws RuntimeException {
         return this.recipeRepository.findRecipeByIdAndActivatedTrue(id)
                 .orElseThrow(() -> new RecipeNotFoundException());
     }
 
     /**
-     * Método responsável pela lógica de buscar um avaliação no banco de dados
+     * Método responsável pela lógica da salvar uma avaliação de uma receita no
+     * banco de dados
+     * 
+     * @param recipeRatingRequest recebe um objeto do tipo RecipeRatingRequest
+     * @return retorna um objeto do tipo RecipeRatingResponse
+     */
+    @Transactional
+    public RecipeRatingResponse saveRating(RecipeRatingRequest recipeRatingRequest) {
+        RecipeRating recipeRating = RecipeRating.builder()
+                .rating(recipeRatingRequest.rating())
+                .recipe(this.findRecipe(recipeRatingRequest.recipeId()))
+                .owner(this.userService.findUser(recipeRatingRequest.ownerId()))
+                .build();
+
+        RecipeRating savedRecipeRating = this.recipeRatingRepository.save(recipeRating);
+
+        log.info("avaliação {} da receita {} foi salva no banco de dados pelo usuario {}.", savedRecipeRating.getId(),
+        recipeRatingRequest.recipeId(), recipeRatingRequest.ownerId());
+
+        return new RecipeRatingResponse(savedRecipeRating.getId(), savedRecipeRating.getRating());
+    }
+
+    /**
+     * Método responsável pela lógica de atualizar uma avaliação no banco de dados
+     * 
+     * @param id              recebe um UUID
+     * @param recipeRatingResponse recebe um objeto do tipo RecipeRatingResponse
+     * @return retorna um objeto do tipo RecipeRatingResponse
+     */
+    @Transactional
+    public RecipeRatingResponse updateRecipeRating(UUID id, RecipeRatingResponse recipeRatingResponse) {
+        RecipeRating recipeRating = this.findRating(id);
+
+        recipeRating.setRating(recipeRatingResponse.rating());
+
+        return new RecipeRatingResponse(recipeRating.getId(), recipeRating.getRating());
+    }
+
+    /**
+     * Método responsável pela lógica de retornar uma avaliação do banco de dados
      * 
      * @param id recebe um UUID
-     * @return retorna um objeto do tipo RecipeRatingDto
+     * @return retorna um objeto do tipo RecipeRatingResponse
      */
-    public RecipeRatingDto rating(UUID id) {
-        return new RecipeRatingDto(this.findRating(id));
+    public RecipeRatingResponse findRatingById(UUID id) {
+        RecipeRating recipeRating = this.findRating(id);
+        return new RecipeRatingResponse(recipeRating.getId(), recipeRating.getRating());
+    }
+
+    /**
+     * Método responsável pela lógica de buscar uma avaliação no banco de dados
+     * 
+     * @param id recebe um UUID
+     * @return retorna um objeto do tipo RecipeRating
+     */
+    public RecipeRating findRating(UUID id) {
+        return this.recipeRatingRepository.findById(id).orElseThrow(() -> new RuntimeException());
     }
 
     /**
@@ -167,31 +217,9 @@ public class RecipeService {
      * @param id recebe um UUID
      * @return retorna um Double
      */
-    private Double findRating(UUID id) {
+    private Double findRatingAverage(UUID id) {
         Double rating = this.recipeRatingRepository.rating(id);
 
         return rating != null ? rating : 0D;
-    }
-
-    /**
-     * Método responsável pela lógica da salvar uma avaliação de uma receita no
-     * banco de dados
-     * 
-     * @param saveRecipeRatingDto recebe um objeto do tipo SaveRecipeRatingDto
-     * @return retorna um objeto do tipo RecipeRatingDto
-     */
-    @Transactional
-    public RecipeRatingDto saveRating(SaveRecipeRatingDto saveRecipeRatingDto) {
-        RecipeRatingEntity recipeRating = RecipeRatingEntity.builder()
-                .rating(saveRecipeRatingDto.rating())
-                .recipe(this.findRecipe(saveRecipeRatingDto.recipe().id()))
-                .owner(this.userService.findUserEntity(saveRecipeRatingDto.owner().id()))
-                .build();
-
-        RecipeRatingEntity savedRecipeRating = this.recipeRatingRepository.save(recipeRating);
-
-        log.info("avaliação {} da receita {} foi salva no banco de dados pelo usuario {}.", savedRecipeRating.getId(), saveRecipeRatingDto.recipe().id(), saveRecipeRatingDto.owner().id());
-
-        return new RecipeRatingDto(savedRecipeRating.getRating());
     }
 }

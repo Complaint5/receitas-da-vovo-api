@@ -7,10 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.receitas_da_vovo.exceptions.CommentNotFoundException;
-import com.receitas_da_vovo.exceptions.ExceptionMessage;
-import com.receitas_da_vovo.exceptions.RecipeNotFoundException;
-import com.receitas_da_vovo.exceptions.UserNotFoundException;
+import com.receitas_da_vovo.infra.exceptions.CommentNotFoundException;
+import com.receitas_da_vovo.infra.exceptions.ExceptionMessage;
+import com.receitas_da_vovo.infra.exceptions.RecipeNotFoundException;
+import com.receitas_da_vovo.infra.exceptions.UserNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 

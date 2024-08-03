@@ -1,4 +1,4 @@
-package com.receitas_da_vovo.dtos;
+package com.receitas_da_vovo.domain.recipe;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * Classe reponsável por representa um data transfer object de receita
  */
-public record RecipeDto(
+public record RecipeResponse(
                 @Id UUID id,
                 @NotBlank String title,
                 @NotBlank String description,

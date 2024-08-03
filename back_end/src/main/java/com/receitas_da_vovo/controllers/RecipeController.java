@@ -4,10 +4,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.receitas_da_vovo.dtos.RecipeDto;
-import com.receitas_da_vovo.dtos.RecipeRatingDto;
-import com.receitas_da_vovo.dtos.SaveRecipeDto;
-import com.receitas_da_vovo.dtos.SaveRecipeRatingDto;
+import com.receitas_da_vovo.domain.recipe.RecipeResponse;
+import com.receitas_da_vovo.domain.recipe_rating.RecipeRatingRequest;
+import com.receitas_da_vovo.domain.recipe_rating.RecipeRatingResponse;
+import com.receitas_da_vovo.domain.recipe.RecipeRequest;
 import com.receitas_da_vovo.services.RecipeService;
 
 import jakarta.validation.Valid;
@@ -34,18 +34,17 @@ public class RecipeController {
     @Autowired
     private RecipeService recipeService;
 
-    // TODO: metodo atualizar rating
-
     /**
      * Método responsável pelo endpoint de salvar a avaliação da receita
      * 
-     * @param saveRecipeRatingDto recebe um objeto do tipo SaveRecipeRatingDto
-     * @return retorna um ResponseEntity de RecipeRatingDto com o estatos created
+     * @param recipeRatingRequest recebe um objeto do tipo RecipeRatingRequest
+     * @return retorna um ResponseEntity de RecipeRatingResponse com o estatos
+     *         created
      */
     @PostMapping("/rating")
-    public ResponseEntity<RecipeRatingDto> saveRecipeRating(
-            @RequestBody @Valid SaveRecipeRatingDto saveRecipeRatingDto) {
-        RecipeRatingDto recipe = this.recipeService.saveRating(saveRecipeRatingDto);
+    public ResponseEntity<RecipeRatingResponse> saveRecipeRating(
+            @RequestBody @Valid RecipeRatingRequest recipeRatingRequest) {
+        RecipeRatingResponse recipe = this.recipeService.saveRating(recipeRatingRequest);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -58,12 +57,12 @@ public class RecipeController {
     /**
      * Método responsável pelo endpoint de salvar a receita
      * 
-     * @param saveRecipeDto recebe um objeto do tipo SaveRecipeDto
-     * @return retorna um ResponseEntity de RecipeDto com o estatos created
+     * @param recipeRequest recebe um objeto do tipo RecipeRequest
+     * @return retorna um ResponseEntity de RecipeResponse com o estatos created
      */
     @PostMapping()
-    public ResponseEntity<RecipeDto> saveRecipe(@RequestBody @Valid SaveRecipeDto saveRecipeDto) {
-        RecipeDto recipe = recipeService.saveRecipe(saveRecipeDto);
+    public ResponseEntity<RecipeResponse> saveRecipe(@RequestBody @Valid RecipeRequest recipeRequest) {
+        RecipeResponse recipe = recipeService.saveRecipe(recipeRequest);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -76,13 +75,27 @@ public class RecipeController {
     /**
      * Método responsável pelo endpoint de atualizar a receita
      * 
-     * @param id        recebe um UUID
-     * @param recipeDto recebe um objeto do tipo RecipeDto
-     * @return retorna um ResponseEntity de RecipeDto com o estatos ok
+     * @param id             recebe um UUID
+     * @param recipeResponse recebe um objeto do tipo RecipeResponse
+     * @return retorna um ResponseEntity de RecipeResponse com o estatos ok
      */
     @PutMapping("/{id}")
-    public ResponseEntity<RecipeDto> updateRecipe(@PathVariable UUID id, @RequestBody @Valid RecipeDto recipeDto) {
-        return ResponseEntity.ok(this.recipeService.updateRecipe(id, recipeDto));
+    public ResponseEntity<RecipeResponse> updateRecipe(@PathVariable UUID id,
+            @RequestBody @Valid RecipeResponse recipeResponse) {
+        return ResponseEntity.ok(this.recipeService.updateRecipe(id, recipeResponse));
+    }
+
+    /**
+     * Método responsável pelo endpoint de atualizar a avaliação da receita
+     * 
+     * @param id                   recebe um UUID
+     * @param recipeRatingResponse recebe um objeto do tipo RecipeRatingResponse
+     * @return retorna um ResponseEntity de RecipeRatingResponse com o estatos ok
+     */
+    @PutMapping("/rating/{id}")
+    public ResponseEntity<RecipeRatingResponse> updateRecipeRating(@PathVariable UUID id,
+            @RequestBody RecipeRatingResponse recipeRatingResponse) {
+        return ResponseEntity.ok(this.recipeService.updateRecipeRating(id, recipeRatingResponse));
     }
 
     /**
@@ -101,10 +114,10 @@ public class RecipeController {
      * Método responsável pelo endpoint de retornar uma receita com base no id
      * 
      * @param id recebe um UUID
-     * @return retorna um ResponseEntity de RecipeDto com o estatos ok
+     * @return retorna um ResponseEntity de RecipeResponse com o estatos ok
      */
     @GetMapping("/{id}")
-    public ResponseEntity<RecipeDto> findRecipeById(@PathVariable UUID id) {
+    public ResponseEntity<RecipeResponse> findRecipeById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.recipeService.findRecipeById(id));
     }
 
@@ -113,11 +126,11 @@ public class RecipeController {
      * base no id da receita
      * 
      * @param id recebe um UUID
-     * @return retorna um ResponseEntity de RecipeRatingDto com o estatos ok
+     * @return retorna um ResponseEntity de RecipeRatingResponse com o estatos ok
      */
     @GetMapping("/rating/{id}")
-    public ResponseEntity<RecipeRatingDto> findRating(@PathVariable UUID id) {
-        return ResponseEntity.ok(this.recipeService.rating(id));
+    public ResponseEntity<RecipeRatingResponse> findRating(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.recipeService.findRatingById(id));
     }
 
     /**
@@ -125,22 +138,22 @@ public class RecipeController {
      * usuario
      * 
      * @param id recebe um UUID
-     * @return retorna um ResponseEntity com uma lista do tipo RecipeDto com o
+     * @return retorna um ResponseEntity com uma lista do tipo RecipeResponse com o
      *         estatos ok
      */
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<RecipeDto>> findAllRecipesByUser(@PathVariable UUID id) {
+    public ResponseEntity<List<RecipeResponse>> findAllRecipesByUser(@PathVariable UUID id) {
         return ResponseEntity.ok(this.recipeService.findAllRecipesByUser(id));
     }
 
     /**
      * Método responsável pelo endpoint de retornar uma lista de todas as receitas
      * 
-     * @return retorna um ResponseEntity com uma lista do tipo RecipeDto com o
+     * @return retorna um ResponseEntity com uma lista do tipo RecipeResponse com o
      *         estatos ok
      */
     @GetMapping()
-    public ResponseEntity<List<RecipeDto>> findAllRecipes() {
+    public ResponseEntity<List<RecipeResponse>> findAllRecipes() {
         return ResponseEntity.ok(this.recipeService.findAllRecipes());
     }
 }

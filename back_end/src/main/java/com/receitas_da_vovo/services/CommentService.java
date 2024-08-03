@@ -6,10 +6,10 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.receitas_da_vovo.dtos.CommentDto;
-import com.receitas_da_vovo.dtos.SaveCommentDto;
-import com.receitas_da_vovo.entities.CommentEntity;
-import com.receitas_da_vovo.exceptions.CommentNotFoundException;
+import com.receitas_da_vovo.domain.comment.Comment;
+import com.receitas_da_vovo.domain.comment.CommentResponse;
+import com.receitas_da_vovo.domain.comment.CommentRequest;
+import com.receitas_da_vovo.infra.exceptions.CommentNotFoundException;
 import com.receitas_da_vovo.repositories.CommentRepository;
 
 import jakarta.transaction.Transactional;
@@ -31,43 +31,43 @@ public class CommentService {
     /**
      * Método responsável pela lógica de salvar um comentario no banco de dados
      * 
-     * @param saveCommentDto recebe um objeto do tipo SaveCommentDto
-     * @return retorna um objeto do tipo CommentDto
+     * @param commentRequest recebe um objeto do tipo CommentRequest
+     * @return retorna um objeto do tipo CommentResponse
      */
     @Transactional
-    public CommentDto saveComment(SaveCommentDto saveCommentDto) {
-        CommentEntity comment = CommentEntity.builder()
-                .body(saveCommentDto.body())
-                .recipe(this.recipeService.findRecipe(saveCommentDto.recipe().id()))
-                .owner(this.userService.findUserEntity(saveCommentDto.owner().id()))
+    public CommentResponse saveComment(CommentRequest commentRequest) {
+        Comment comment = Comment.builder()
+                .body(commentRequest.body())
+                .recipe(this.recipeService.findRecipe(commentRequest.recipeId()))
+                .owner(this.userService.findUser(commentRequest.ownerId()))
                 .activated(true)
                 .build();
 
-        CommentEntity commentSaved = this.commentRepository.save(comment);
+        Comment commentSaved = this.commentRepository.save(comment);
 
         log.info("cometario {} foi salvo no banco de dados.", commentSaved.getId());
 
-        return new CommentDto(commentSaved.getId(), commentSaved.getBody());
+        return new CommentResponse(commentSaved.getId(), commentSaved.getBody());
     }
 
     /**
      * Método responsável pela lógica de atualizar um comentario no banco de dados
      * 
      * @param id         recebe um UUID
-     * @param mensageDto recebe um objeto do tipo CommentDto
-     * @return retorna um objeto do tipo CommentDto
+     * @param commentResponse recebe um objeto do tipo CommentResponse
+     * @return retorna um objeto do tipo CommentResponse
      */
     @Transactional
-    public CommentDto updateComment(UUID id, CommentDto mensageDto) {
-        CommentEntity comment = this.findCommentEntity(id);
+    public CommentResponse updateComment(UUID id, CommentResponse commentResponse) {
+        Comment comment = this.findComment(id);
 
-        comment.setBody(mensageDto.body());
+        comment.setBody(commentResponse.body());
 
-        CommentEntity commentUpdated = this.commentRepository.save(comment);
+        Comment commentUpdated = this.commentRepository.save(comment);
 
         log.info("cometario {} foi atualizado no banco de dados.", commentUpdated.getId());
 
-        return new CommentDto(commentUpdated.getId(), commentUpdated.getBody());
+        return new CommentResponse(commentUpdated.getId(), commentUpdated.getBody());
     }
 
     /**
@@ -78,7 +78,7 @@ public class CommentService {
      */
     @Transactional
     public boolean deleteComment(UUID id) {
-        CommentEntity comment = this.findCommentEntity(id);
+        Comment comment = this.findComment(id);
 
         comment.setActivated(false);
 
@@ -91,12 +91,12 @@ public class CommentService {
      * Método responsável pela lógica de buscar um comentario no banco de dados
      * 
      * @param id recebe um UUID
-     * @return retorna um objeto do tipo CommentDto
+     * @return retorna um objeto do tipo CommentResponse
      */
-    public CommentDto findCommentById(UUID id) {
-        CommentEntity comment = this.findCommentEntity(id);
+    public CommentResponse findCommentById(UUID id) {
+        Comment comment = this.findComment(id);
 
-        return new CommentDto(comment.getId(), comment.getBody());
+        return new CommentResponse(comment.getId(), comment.getBody());
     }
 
     /**
@@ -104,12 +104,12 @@ public class CommentService {
      * dados com base no id da receita
      * 
      * @param id recebe um UUID
-     * @return retorna uma lista de objetos CommentDto
+     * @return retorna uma lista de objetos CommentResponse
      */
-    public List<CommentDto> findAllCommentsByRecipe(UUID id) {
+    public List<CommentResponse> findAllCommentsByRecipe(UUID id) {
         System.out.println("listando tudo");
         return this.commentRepository.findAllCommentByRecipe(id).stream()
-                .map(comment -> new CommentDto(comment.getId(), comment.getBody()))
+                .map(comment -> new CommentResponse(comment.getId(), comment.getBody()))
                 .toList();
     }
 
@@ -117,11 +117,11 @@ public class CommentService {
      * Método responsável pela lógica de buscar um comentário na banco de dados
      * 
      * @param id recebe um UUID
-     * @return retorna um objeto do tipo CommentEntity
+     * @return retorna um objeto do tipo Comment
      * @throws RuntimeException pode lançar uma exeção caso não encontre o
      *                          comentário
      */
-    public CommentEntity findCommentEntity(UUID id) throws RuntimeException {
+    public Comment findComment(UUID id) throws RuntimeException {
         return this.commentRepository.findCommentByIdAndActivatedTrue(id)
                 .orElseThrow(() -> new CommentNotFoundException());
     }

@@ -1,4 +1,4 @@
-package com.receitas_da_vovo.dtos;
+package com.receitas_da_vovo.domain.recipe;
 
 import java.util.UUID;
 
@@ -9,9 +9,9 @@ import jakarta.validation.constraints.NotNull;
  * Classe reponsável por representa um data transfer object de receita para o
  * salvamento
  */
-public record SaveRecipeDto(
+public record RecipeRequest(
                 UUID id,
                 @NotBlank String title,
                 @NotBlank String description,
-                @NotNull UserDto creator) {
+                @NotNull UUID creatorId) {
 }

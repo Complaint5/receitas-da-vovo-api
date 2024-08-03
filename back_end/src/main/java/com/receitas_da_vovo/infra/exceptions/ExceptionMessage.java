@@ -1,4 +1,4 @@
-package com.receitas_da_vovo.exceptions;
+package com.receitas_da_vovo.infra.exceptions;
 
 import java.time.LocalDateTime;
 
@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Classe responsável por a mensagen de exeção retornada pela api
+ */
 @AllArgsConstructor
 @Data
 @Builder

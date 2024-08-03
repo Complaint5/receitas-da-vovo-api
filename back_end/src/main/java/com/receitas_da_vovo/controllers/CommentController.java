@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.receitas_da_vovo.dtos.CommentDto;
-import com.receitas_da_vovo.dtos.SaveCommentDto;
+import com.receitas_da_vovo.domain.comment.CommentResponse;
+import com.receitas_da_vovo.domain.comment.CommentRequest;
 import com.receitas_da_vovo.services.CommentService;
 
 import jakarta.validation.Valid;
@@ -34,12 +34,13 @@ public class CommentController {
     /**
      * Método responsável pelo endpoint de salvar um comentario
      * 
-     * @param saveCommentDto recebe um objeto do tipo SaveCommentDto
-     * @return retorna um ResponseEntity do tipo CommentDto com o estatos created
+     * @param commentRequest recebe um objeto do tipo CommentRequest
+     * @return retorna um ResponseEntity do tipo CommentResponse com o estatos
+     *         created
      */
     @PostMapping
-    public ResponseEntity<CommentDto> saveComment(@RequestBody @Valid SaveCommentDto saveCommentDto) {
-        CommentDto comment = this.commentService.saveComment(saveCommentDto);
+    public ResponseEntity<CommentResponse> saveComment(@RequestBody @Valid CommentRequest commentRequest) {
+        CommentResponse comment = this.commentService.saveComment(commentRequest);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -52,13 +53,14 @@ public class CommentController {
     /**
      * Método responsável pelo endpoint de atualizar um comentario
      * 
-     * @param id recebe um UUID
-     * @param commentDto recebe um objeto do tipo CommentDto
-     * @return retorna um ResponseEntity do tipo CommentDto com o estatos ok
+     * @param id              recebe um UUID
+     * @param commentResponse recebe um objeto do tipo CommentResponse
+     * @return retorna um ResponseEntity do tipo CommentResponse com o estatos ok
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CommentDto> updateComment(@PathVariable UUID id, @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(this.commentService.updateComment(id, commentDto));
+    public ResponseEntity<CommentResponse> updateComment(@PathVariable UUID id,
+            @RequestBody @Valid CommentResponse commentResponse) {
+        return ResponseEntity.ok(this.commentService.updateComment(id, commentResponse));
     }
 
     /**
@@ -75,21 +77,24 @@ public class CommentController {
 
     /**
      * Método responsável pelo endpoint de retornar um comentario com base no id
+     * 
      * @param id recebe um UUID
-     * @return retorna um ResponseEntity do tipo CommentDto com o estatos ok
+     * @return retorna um ResponseEntity do tipo CommentResponse com o estatos ok
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CommentDto> findById(@PathVariable UUID id) {
+    public ResponseEntity<CommentResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.commentService.findCommentById(id));
     }
 
     /**
      * Método responsável pelo endpoint de retornar uma lista de todos os comentario
+     * 
      * @param id recebe um UUID
-     * @return retorna um ResponseEntity com uma lista do tipo CommentDto com o estatos ok
+     * @return retorna um ResponseEntity com uma lista do tipo CommentResponse com o
+     *         estatos ok
      */
     @GetMapping("/recipe/{id}")
-    public ResponseEntity<List<CommentDto>> findAllByRecipe(@PathVariable UUID id) {
+    public ResponseEntity<List<CommentResponse>> findAllByRecipe(@PathVariable UUID id) {
         return ResponseEntity.ok(this.commentService.findAllCommentsByRecipe(id));
     }
 }

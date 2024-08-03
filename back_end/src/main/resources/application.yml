@@ -19,7 +19,7 @@ spring:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
                 show_sql: false
-                format_sql: true
+                format_sql: false
     cache:
         type: redis
         redis:
@@ -30,26 +30,3 @@ spring:
 logging:
     file:
         name: logs\recipe-api.log
-
-
-
-
-
-
-    # datasource:
-    #     url: jdbc:h2:mem:test
-    #     driverClassName: org.h2.Driver
-    #     username: sa
-    #     password: 
-    # jpa:
-    #     open-in-view: false
-    #     database-platform: org.hibernate.dialect.H2Dialect
-    #     defer-datasource-initialization: false
-    #     properties:
-    #         hibernate:
-    #             # show_sql: true
-    #             # format_sql: true
-    # h2:
-    #     console:
-    #         path: /h2
-    #         enabled: true

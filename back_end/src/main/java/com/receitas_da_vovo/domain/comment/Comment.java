@@ -1,6 +1,9 @@
-package com.receitas_da_vovo.entities;
+package com.receitas_da_vovo.domain.comment;
 
 import java.util.UUID;
+
+import com.receitas_da_vovo.domain.recipe.Recipe;
+import com.receitas_da_vovo.domain.user.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,23 +19,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Classe reponsável por representa a tabela de avaliações das receitas
+ * Classe reponsável por representa a tabela de comentario
  */
 @Entity
-@Table(name = "recipe_rating")
+@Table(name = "comments")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class RecipeRatingEntity {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private Double rating;
+    private String body;
     @ManyToOne
-    private RecipeEntity recipe;
+    private Recipe recipe;
     @ManyToOne
-    private UserEntity owner;
+    private User owner;
+    private Boolean activated;
 }
