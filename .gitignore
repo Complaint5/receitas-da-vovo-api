@@ -39,3 +39,4 @@ data
 docker-compose.yml
 
 logs/
+ssh

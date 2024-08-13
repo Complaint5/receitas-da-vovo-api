@@ -5,6 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.receitas_da_vovo.domain.user.User;
 
@@ -26,4 +29,21 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * @return retorna um lista do tipo UserEntity
      */
     List<User> findAllUsersByActivatedTrue();
+
+    /**
+     * Método responsável por retornar um UserDetails com base no email do usuario no banco de dados
+     * 
+     * @param email recebe uma String
+     * @return retornar um objeto do tipo UserDetails
+     */
+    UserDetails findUserByEmail(String email);
+
+    /**
+     * Método responsável por retornar um Optiona de User com base no email do usuario no banco de dados
+     * 
+     * @param email recebe uma String
+     * @return retorna um Optional do tipo User
+     */
+    @Query(value = "SELECT * FROM users WHERE email = :email", nativeQuery = true)
+    Optional<User> findUserByEmailNativeQuery(@Param("email")String email);
 }

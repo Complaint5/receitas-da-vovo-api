@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.receitas_da_vovo.domain.user.UserRequest;
+import com.receitas_da_vovo.domain.user.SaveUserResponse;
+import com.receitas_da_vovo.domain.user.SaveUserRequest;
+import com.receitas_da_vovo.domain.user.UpdateUserRequest;
+import com.receitas_da_vovo.domain.user.UpdateUserResponse;
 import com.receitas_da_vovo.domain.user.UserResponse;
 import com.receitas_da_vovo.services.UserService;
 
@@ -34,12 +39,13 @@ public class UserController {
     /**
      * Método responsável pelo endpoint de salvar o usuario
      * 
-     * @param userRequest recebe um objeto do tipo UserRequest
-     * @return retorna um ResponseEntity do tipo UserResponse com o estatos created
+     * @param SaveUserRequest recebe um objeto do tipo SaveUserRequest
+     * @return retorna um ResponseEntity do tipo SaveUserResponse com o estatos
+     *         created
      */
     @PostMapping
-    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid UserRequest userRequest) {
-        UserResponse user = this.userService.saveUser(userRequest);
+    public ResponseEntity<SaveUserResponse> saveUser(@RequestBody @Valid SaveUserRequest saveUserRequest) {
+        SaveUserResponse user = this.userService.saveUser(saveUserRequest);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -52,25 +58,29 @@ public class UserController {
     /**
      * Método responsável pelo endpoint de atualizar o usuario
      * 
-     * @param id           recebe um UUID
-     * @param userResponse recebe um objeto do tipo UserResponse
-     * @return retorna um ResponseEntity do tipo UserResponse com o estatos ok
+     * @param id                     recebe um UUID
+     * @param UpdateUserRequest      recebe um objeto do tipo UpdateUserRequest
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
+     * @return retorna um ResponseEntity do tipo UpdateUserRequest com o estatos ok
      */
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id,
-            @RequestBody @Valid UserResponse userResponse) {
-        return ResponseEntity.ok(this.userService.updataUser(id, userResponse));
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
+    public ResponseEntity<UpdateUserResponse> updateUser(@PathVariable UUID id,
+            @RequestBody @Valid UpdateUserRequest updateUserRequest, JwtAuthenticationToken token) {
+        return ResponseEntity.ok(this.userService.updataUser(id, updateUserRequest, token));
     }
 
     /**
      * Método responsável pelo endpoint de deletar o usuario
      * 
-     * @param id recebe um UUID
+     * @param id                     recebe um UUID
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
      * @return retorna um ResponseEntity com o estatos no content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
-        this.userService.deleteUser(id);
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id, JwtAuthenticationToken token) { // TODO: rever
+        this.userService.deleteUser(id, token);
         return ResponseEntity.noContent().build();
     }
 
@@ -81,6 +91,7 @@ public class UserController {
      * @return retorna um ResponseEntity do tipo UserResponse com o estatos ok
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
     public ResponseEntity<UserResponse> findUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.userService.findUserById(id));
     }
@@ -92,6 +103,7 @@ public class UserController {
      *         estatos ok
      */
     @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     public ResponseEntity<List<UserResponse>> findAllUsers() {
         return ResponseEntity.ok(this.userService.findAllUsers());
     }

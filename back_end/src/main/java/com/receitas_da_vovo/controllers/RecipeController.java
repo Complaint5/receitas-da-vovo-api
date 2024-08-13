@@ -5,9 +5,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.receitas_da_vovo.domain.recipe.RecipeResponse;
-import com.receitas_da_vovo.domain.recipe_rating.RecipeRatingRequest;
+import com.receitas_da_vovo.domain.recipe.SaveRecipeRequest;
+import com.receitas_da_vovo.domain.recipe.SaveRecipeResponse;
+import com.receitas_da_vovo.domain.recipe.UpdateRecipeRequest;
+import com.receitas_da_vovo.domain.recipe.UpdateRecipeResponse;
 import com.receitas_da_vovo.domain.recipe_rating.RecipeRatingResponse;
-import com.receitas_da_vovo.domain.recipe.RecipeRequest;
+import com.receitas_da_vovo.domain.recipe_rating.SaveRecipeRatingRequest;
+import com.receitas_da_vovo.domain.recipe_rating.SaveRecipeRatingResponse;
+import com.receitas_da_vovo.domain.recipe_rating.UpdateRecipeRatingRequest;
+import com.receitas_da_vovo.domain.recipe_rating.UpdateRecipeRatingResponse;
 import com.receitas_da_vovo.services.RecipeService;
 
 import jakarta.validation.Valid;
@@ -18,6 +24,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,14 +45,18 @@ public class RecipeController {
     /**
      * Método responsável pelo endpoint de salvar a avaliação da receita
      * 
-     * @param recipeRatingRequest recebe um objeto do tipo RecipeRatingRequest
-     * @return retorna um ResponseEntity de RecipeRatingResponse com o estatos
+     * @param SaveRecipeRatingRequest recebe um objeto do tipo
+     *                                SaveRecipeRatingRequest
+     * @param JwtAuthenticationToken  recebe um objeto do tipo
+     *                                JwtAuthenticationToken
+     * @return retorna um ResponseEntity de SaveRecipeRatingResponse com o estatos
      *         created
      */
     @PostMapping("/rating")
-    public ResponseEntity<RecipeRatingResponse> saveRecipeRating(
-            @RequestBody @Valid RecipeRatingRequest recipeRatingRequest) {
-        RecipeRatingResponse recipe = this.recipeService.saveRating(recipeRatingRequest);
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
+    public ResponseEntity<SaveRecipeRatingResponse> saveRecipeRating(
+            @RequestBody @Valid SaveRecipeRatingRequest saveRecipeRatingRequest, JwtAuthenticationToken token) {
+        SaveRecipeRatingResponse recipe = this.recipeService.saveRating(saveRecipeRatingRequest, token);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -57,12 +69,15 @@ public class RecipeController {
     /**
      * Método responsável pelo endpoint de salvar a receita
      * 
-     * @param recipeRequest recebe um objeto do tipo RecipeRequest
-     * @return retorna um ResponseEntity de RecipeResponse com o estatos created
+     * @param SaveRecipeRequest      recebe um objeto do tipo SaveRecipeRequest
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
+     * @return retorna um ResponseEntity de SaveRecipeResponse com o estatos created
      */
     @PostMapping()
-    public ResponseEntity<RecipeResponse> saveRecipe(@RequestBody @Valid RecipeRequest recipeRequest) {
-        RecipeResponse recipe = recipeService.saveRecipe(recipeRequest);
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
+    public ResponseEntity<SaveRecipeResponse> saveRecipe(@RequestBody @Valid SaveRecipeRequest saveRecipeRequest,
+            JwtAuthenticationToken token) {
+        SaveRecipeResponse recipe = recipeService.saveRecipe(saveRecipeRequest, token);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -75,38 +90,48 @@ public class RecipeController {
     /**
      * Método responsável pelo endpoint de atualizar a receita
      * 
-     * @param id             recebe um UUID
-     * @param recipeResponse recebe um objeto do tipo RecipeResponse
-     * @return retorna um ResponseEntity de RecipeResponse com o estatos ok
+     * @param id                     recebe um UUID
+     * @param UpdateRecipeRequest    recebe um objeto do tipo UpdateRecipeRequest
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
+     * @return retorna um ResponseEntity de UpdateRecipeResponse com o estatos ok
      */
     @PutMapping("/{id}")
-    public ResponseEntity<RecipeResponse> updateRecipe(@PathVariable UUID id,
-            @RequestBody @Valid RecipeResponse recipeResponse) {
-        return ResponseEntity.ok(this.recipeService.updateRecipe(id, recipeResponse));
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
+    public ResponseEntity<UpdateRecipeResponse> updateRecipe(@PathVariable UUID id,
+            @RequestBody @Valid UpdateRecipeRequest updateRecipeRequest, JwtAuthenticationToken token) {
+        System.out.println(token.getName());
+        return ResponseEntity.ok(this.recipeService.updateRecipe(id, updateRecipeRequest, token));
     }
 
     /**
      * Método responsável pelo endpoint de atualizar a avaliação da receita
      * 
-     * @param id                   recebe um UUID
-     * @param recipeRatingResponse recebe um objeto do tipo RecipeRatingResponse
-     * @return retorna um ResponseEntity de RecipeRatingResponse com o estatos ok
+     * @param id                        recebe um UUID
+     * @param UpdateRecipeRatingRequest recebe um objeto do tipo
+     *                                  UpdateRecipeRatingRequest
+     * @param JwtAuthenticationToken    recebe um objeto do tipo
+     *                                  JwtAuthenticationToken
+     * @return retorna um ResponseEntity de UpdateRecipeRatingResponse com o estatos
+     *         ok
      */
     @PutMapping("/rating/{id}")
-    public ResponseEntity<RecipeRatingResponse> updateRecipeRating(@PathVariable UUID id,
-            @RequestBody RecipeRatingResponse recipeRatingResponse) {
-        return ResponseEntity.ok(this.recipeService.updateRecipeRating(id, recipeRatingResponse));
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
+    public ResponseEntity<UpdateRecipeRatingResponse> updateRecipeRating(@PathVariable UUID id,
+            @RequestBody UpdateRecipeRatingRequest updateRecipeRatingRequest, JwtAuthenticationToken token) {
+        return ResponseEntity.ok(this.recipeService.updateRecipeRating(id, updateRecipeRatingRequest, token));
     }
 
     /**
      * Método responsável pelo endpoint de deletar a receita
      * 
-     * @param id recebe um UUID
+     * @param id                     recebe um UUID
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
      * @return retorna um ResponseEntity com o estatos no content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRecipe(@PathVariable UUID id) {
-        this.recipeService.deleteRecipe(id);
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable UUID id, JwtAuthenticationToken token) {
+        this.recipeService.deleteRecipe(id, token);
         return ResponseEntity.noContent().build();
     }
 
@@ -117,6 +142,7 @@ public class RecipeController {
      * @return retorna um ResponseEntity de RecipeResponse com o estatos ok
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
     public ResponseEntity<RecipeResponse> findRecipeById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.recipeService.findRecipeById(id));
     }
@@ -129,6 +155,7 @@ public class RecipeController {
      * @return retorna um ResponseEntity de RecipeRatingResponse com o estatos ok
      */
     @GetMapping("/rating/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
     public ResponseEntity<RecipeRatingResponse> findRating(@PathVariable UUID id) {
         return ResponseEntity.ok(this.recipeService.findRatingById(id));
     }
@@ -142,6 +169,7 @@ public class RecipeController {
      *         estatos ok
      */
     @GetMapping("/user/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_STANDART')")
     public ResponseEntity<List<RecipeResponse>> findAllRecipesByUser(@PathVariable UUID id) {
         return ResponseEntity.ok(this.recipeService.findAllRecipesByUser(id));
     }

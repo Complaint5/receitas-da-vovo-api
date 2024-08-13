@@ -4,12 +4,18 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import com.receitas_da_vovo.domain.user.SaveUserResponse;
+import com.receitas_da_vovo.domain.user.UpdateUserRequest;
+import com.receitas_da_vovo.domain.user.UpdateUserResponse;
+import com.receitas_da_vovo.domain.user.SaveUserRequest;
 import com.receitas_da_vovo.domain.user.User;
-import com.receitas_da_vovo.domain.user.UserRequest;
 import com.receitas_da_vovo.domain.user.UserResponse;
 import com.receitas_da_vovo.domain.user.UserRole;
+import com.receitas_da_vovo.infra.exceptions.UserForbiddenException;
 import com.receitas_da_vovo.infra.exceptions.UserNotFoundException;
 import com.receitas_da_vovo.repositories.UserRepository;
 
@@ -24,21 +30,24 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // TODO: Adicionar metodo para trocar de senha
+    // TODO: talvez refazer userResponse
 
     /**
      * Método responsável pela logica de salvar um usuario no banco de dados
      * 
-     * @param userRequest recebe um objeto do tipo UserRequest
-     * @return retorna um objeto do tipo UserResponse
+     * @param SaveUserRequest recebe um objeto do tipo SaveUserRequest
+     * @return retorna um objeto do tipo SaveUserResponse
      */
     @Transactional
-    public UserResponse saveUser(UserRequest userRequest) {
+    public SaveUserResponse saveUser(SaveUserRequest saveUserRequest) {
         User user = User.builder()
-                .name(userRequest.name())
-                .email(userRequest.email())
-                .password(userRequest.password())
+                .name(saveUserRequest.name())
+                .email(saveUserRequest.email())
+                .password(this.passwordEncoder.encode(saveUserRequest.password()))
                 .activated(true)
                 .userRole(UserRole.STANDART)
                 .build();
@@ -47,39 +56,49 @@ public class UserService {
 
         log.info("usuairo {} foi salvo no banco de dados.", userCreated.getId());
 
-        return new UserResponse(userCreated.getId(), userCreated.getName(), userCreated.getEmail());
+        return new SaveUserResponse(userCreated.getId(), userCreated.getName(), userCreated.getEmail());
     }
 
     /**
      * Método responsável pela logica de atualizar um usuario no banco de dados
      * 
-     * @param id      recebe um UUID
-     * @param userResponse recebe um objeto do tipo UserResponse
-     * @return retorna um objeto do tipo UserResponse
+     * @param id                     recebe um UUID
+     * @param UpdateUserRequest      recebe um objeto do tipo UpdateUserRequest
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
+     * @return retorna um objeto do tipo UpdateUserResponse
      */
     @Transactional
-    public UserResponse updataUser(UUID id, UserResponse userResponse) {
+    public UpdateUserResponse updataUser(UUID id, UpdateUserRequest updateUserRequest, JwtAuthenticationToken token) {
+        if (!UUID.fromString(token.getName()).equals(id)) {
+            throw new UserForbiddenException();
+        }
         User user = this.findUser(id);
 
-        user.setName(userResponse.name());
-        user.setEmail(userResponse.email());
+        user.setName(updateUserRequest.name());
+        user.setEmail(updateUserRequest.email());
 
         User userUpdated = this.userRepository.save(user);
 
         log.info("usuairo {} foi atualizado no banco de dados.", userUpdated.getId());
 
-        return new UserResponse(userUpdated.getId(), userUpdated.getName(), userUpdated.getEmail());
+        return new UpdateUserResponse(userUpdated.getId(), userUpdated.getName(), userUpdated.getEmail());
+
     }
 
     /**
      * Método responsável pela logica de exclusão de um usuario do banco de dados
      * 
-     * @param id recebe um UUID
+     * @param id                     recebe um UUID
+     * @param JwtAuthenticationToken recebe um objeto do tipo JwtAuthenticationToken
      * @return retorna um boolean
      */
     @Transactional
-    public boolean deleteUser(UUID id) {
+    public boolean deleteUser(UUID id, JwtAuthenticationToken token) {
         User user = this.findUser(id);
+
+        if (!UUID.fromString(token.getName()).equals(id)) {
+            throw new UserForbiddenException();
+        }
 
         user.setActivated(false);
 

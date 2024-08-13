@@ -4,12 +4,17 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import com.receitas_da_vovo.domain.comment.Comment;
 import com.receitas_da_vovo.domain.comment.CommentResponse;
-import com.receitas_da_vovo.domain.comment.CommentRequest;
+import com.receitas_da_vovo.domain.comment.SaveCommentRequest;
+import com.receitas_da_vovo.domain.comment.SaveCommentResponse;
+import com.receitas_da_vovo.domain.comment.UpdateCommentRequest;
+import com.receitas_da_vovo.domain.comment.UpdateCommentResponse;
 import com.receitas_da_vovo.infra.exceptions.CommentNotFoundException;
+import com.receitas_da_vovo.infra.exceptions.UserForbiddenException;
 import com.receitas_da_vovo.repositories.CommentRepository;
 
 import jakarta.transaction.Transactional;
@@ -31,15 +36,17 @@ public class CommentService {
     /**
      * Método responsável pela lógica de salvar um comentario no banco de dados
      * 
-     * @param commentRequest recebe um objeto do tipo CommentRequest
-     * @return retorna um objeto do tipo CommentResponse
+     * @param SaveCommentResponse    recebe um objeto do tipo SaveCommentResponse
+     * @param JwtAuthenticationToken recebe um objeto do tipo
+     *                               JwtAuthenticationToken
+     * @return retorna um objeto do tipo SaveCommentResponse
      */
     @Transactional
-    public CommentResponse saveComment(CommentRequest commentRequest) {
+    public SaveCommentResponse saveComment(SaveCommentRequest saveCommentRequest, JwtAuthenticationToken token) {
         Comment comment = Comment.builder()
-                .body(commentRequest.body())
-                .recipe(this.recipeService.findRecipe(commentRequest.recipeId()))
-                .owner(this.userService.findUser(commentRequest.ownerId()))
+                .body(saveCommentRequest.body())
+                .recipe(this.recipeService.findRecipe(saveCommentRequest.recipeId()))
+                .owner(this.userService.findUser(UUID.fromString(token.getName())))
                 .activated(true)
                 .build();
 
@@ -47,38 +54,51 @@ public class CommentService {
 
         log.info("cometario {} foi salvo no banco de dados.", commentSaved.getId());
 
-        return new CommentResponse(commentSaved.getId(), commentSaved.getBody());
+        return new SaveCommentResponse(commentSaved.getId(), commentSaved.getBody());
     }
 
     /**
      * Método responsável pela lógica de atualizar um comentario no banco de dados
      * 
-     * @param id         recebe um UUID
-     * @param commentResponse recebe um objeto do tipo CommentResponse
-     * @return retorna um objeto do tipo CommentResponse
+     * @param id                     recebe um UUID
+     * @param UpdateCommentResponse  recebe um objeto do tipo UpdateCommentResponse
+     * @param JwtAuthenticationToken recebe um objeto do tipo
+     *                               JwtAuthenticationToken
+     * @return retorna um objeto do tipo UpdateCommentResponse
      */
     @Transactional
-    public CommentResponse updateComment(UUID id, CommentResponse commentResponse) {
+    public UpdateCommentResponse updateComment(UUID id, UpdateCommentRequest updateCommentRequest,
+            JwtAuthenticationToken token) {
         Comment comment = this.findComment(id);
 
-        comment.setBody(commentResponse.body());
+        if (!UUID.fromString(token.getName()).equals(comment.getOwner().getId())) {
+            throw new UserForbiddenException();
+        }
+
+        comment.setBody(updateCommentRequest.body());
 
         Comment commentUpdated = this.commentRepository.save(comment);
 
         log.info("cometario {} foi atualizado no banco de dados.", commentUpdated.getId());
 
-        return new CommentResponse(commentUpdated.getId(), commentUpdated.getBody());
+        return new UpdateCommentResponse(commentUpdated.getId(), commentUpdated.getBody());
     }
 
     /**
      * Método resonsável pela lógica de exclusão um comentário no banco de dados
      * 
-     * @param id recebe um UUID
+     * @param id                     recebe um UUID
+     * @param JwtAuthenticationToken recebe um objeto do tipo
+     *                               JwtAuthenticationToken
      * @return retorna um boolean
      */
     @Transactional
-    public boolean deleteComment(UUID id) {
+    public boolean deleteComment(UUID id, JwtAuthenticationToken token) {
         Comment comment = this.findComment(id);
+
+        if (!UUID.fromString(token.getName()).equals(comment.getOwner().getId())) {
+            throw new UserForbiddenException();
+        }
 
         comment.setActivated(false);
 

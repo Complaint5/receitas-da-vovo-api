@@ -19,7 +19,7 @@ spring:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
                 show_sql: false
-                format_sql: false
+                format_sql: true
     cache:
         type: redis
         redis:
@@ -30,3 +30,16 @@ spring:
 logging:
     file:
         name: logs\recipe-api.log
+
+key:
+    public: classpath:/ssh/app.pub
+    private: classpath:/ssh/app.key
+
+token:
+    access-expiration: 1500
+    refresh: 300
+
+admin:
+    name: "Phelipe"
+    email: "phelipe8293@gmail.com"
+    password: "123"
