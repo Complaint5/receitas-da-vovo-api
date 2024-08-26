@@ -34,7 +34,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/v1/comment")
 public class CommentController {
     @Autowired
-    private CommentService commentService;
+    private CommentService commentService;// TODO: adicionar as autorizações com roles no securityconfiguration
 
     /**
      * Método responsável pelo endpoint de salvar um comentario
